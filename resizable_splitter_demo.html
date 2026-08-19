@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WAI-ARIA Splitter Accessibility Test</title>
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --primary-hover: #1557b0;
+      --bg-color: #f8f9fa;
+      --border-color: #dadce0;
+      --text-color: #202124;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    p.description {
+      color: #5f6368;
+      font-size: 0.95rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .demo-section {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .demo-section h2 {
+      font-size: 1.15rem;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    /* Container for the two panes + resizable splitter */
+    .panes-container {
+      display: flex;
+      height: 260px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .pane {
+      padding: 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    #left-pane {
+      width: 50%;
+      background-color: #e8f0fe;
+    }
+
+    #right-pane {
+      flex: 1;
+      background-color: #fef7e0;
+    }
+
+    /*
+      Interactive Resizable Splitter
+      WAI-ARIA requires role="separator", tabindex="0", and aria-valuenow/min/max.
+    */
+    .resizable-splitter {
+      width: 16px;
+      background-color: var(--primary-color);
+      cursor: col-resize;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      touch-action: none;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* Grip handle indicator */
+    .resizable-splitter::after {
+      content: "";
+      width: 4px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 2px;
+    }
+
+    .resizable-splitter:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .resizable-splitter:focus,
+    .resizable-splitter:focus-visible {
+      outline: 3px solid #fbbc04;
+      outline-offset: -2px;
+      background-color: #174ea6;
+    }
+
+    /* Live status / event log */
+    .status-panel {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f1f3f4;
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.9rem;
+    }
+
+    .status-row {
+      margin: 4px 0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .badge-interactive { background: #d2e3fc; color: #174ea6; }
+    .badge-static { background: #e8eaed; color: #3c4043; }
+
+    /* Static separator styling */
+    .static-separator {
+      height: 4px;
+      background-color: #bdc1c6;
+      margin: 16px 0;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>WAI-ARIA Splitter (<code>role="separator"</code>) Accessibility Test</h1>
+  <p class="description">
+    This sample page demonstrates how Chromium treats <code>role="separator"</code> elements differently based on focusability and range attributes.
+  </p>
+
+  <!-- 1. Interactive Resizable Splitter Section -->
+  <div class="demo-section">
+    <h2>
+      1. Interactive Resizable Splitter
+      <span class="badge badge-interactive">IsRangeValueSupported() == true</span>
+    </h2>
+    <p class="description">
+      Has <code>role="separator"</code>, <code>tabindex="0"</code>, and <code>aria-valuenow/min/max</code>. 
+      Focus the blue divider and use <b>Arrow Left / Arrow Down</b> to decrease, <b>Arrow Right / Arrow Up</b> to increase, or drag with touch/mouse.
+    </p>
+
+    <div class="panes-container">
+      <div id="left-pane" class="pane">
+        <h3>Left Panel</h3>
+        <p>Width is bound to <code>aria-valuenow</code>.</p>
+      </div>
+
+      <!-- 
+        WAI-ARIA Window Splitter Markup:
+        - role="separator"
+        - tabindex="0" (makes it focusable and tells Chromium it is an adjustable splitter)
+        - aria-valuenow, aria-valuemin, aria-valuemax
+        - aria-valuetext (provides human-readable range text for ATs)
+      -->
+      <div
+        id="test-splitter"
+        class="resizable-splitter"
+        role="separator"
+        tabindex="0"
+        aria-label="Resize left and right panels"
+        aria-orientation="vertical"
+        aria-valuemin="10"
+        aria-valuemax="90"
+        aria-valuenow="50"
+        aria-valuetext="50 percent">
+      </div>
+
+      <div id="right-pane" class="pane">
+        <h3>Right Panel</h3>
+        <p>Takes remaining flex space.</p>
+      </div>
+    </div>
+
+    <!-- Live Event Log -->
+    <div class="status-panel" aria-live="polite">
+      <div class="status-row"><strong>aria-valuenow:</strong> <span id="log-valuenow">50</span>%</div>
+      <div class="status-row"><strong>aria-valuetext:</strong> <span id="log-valuetext">50 percent</span></div>
+      <div class="status-row"><strong>Last Event:</strong> <span id="log-event">None</span></div>
+    </div>
+  </div>
+
+  <!-- 2. Static Non-Focusable Separator Section -->
+  <div class="demo-section">
+    <h2>
+      2. Static Non-Resizable Separator
+      <span class="badge badge-static">IsRangeValueSupported() == false</span>
+    </h2>
+    <p class="description">
+      A standard <code>&lt;hr&gt;</code> or <code>&lt;div role="separator"&gt;</code> <i>without</i> <code>tabindex="0"</code>.
+      Because it is not focusable, Chromium treats it as a static structural divider and does not expose range controls.
+    </p>
+
+    <div role="separator" aria-orientation="horizontal" class="static-separator"></div>
+  </div>
+
+  <script>
+    const splitter = document.getElementById('test-splitter');
+    const leftPane = document.getElementById('left-pane');
+    const logValueNow = document.getElementById('log-valuenow');
+    const logValueText = document.getElementById('log-valuetext');
+    const logEvent = document.getElementById('log-event');
+
+    const MIN_VAL = parseInt(splitter.getAttribute('aria-valuemin'), 10);
+    const MAX_VAL = parseInt(splitter.getAttribute('aria-valuemax'), 10);
+    const STEP = 5;
+
+    function updateSplitter(newValue, eventDescription) {
+      // Clamp value between min and max
+      const clampedValue = Math.max(MIN_VAL, Math.min(MAX_VAL, Math.round(newValue)));
+      const valueText = clampedValue + ' percent';
+
+      // Update ARIA attributes
+      splitter.setAttribute('aria-valuenow', clampedValue);
+      splitter.setAttribute('aria-valuetext', valueText);
+
+      // Update visual pane width
+      leftPane.style.width = clampedValue + '%';
+
+      // Update log display
+      logValueNow.textContent = clampedValue;
+      logValueText.textContent = valueText;
+      logEvent.textContent = eventDescription;
+    }
+
+    // 1. Keyboard event listener for WAI-ARIA Splitter navigation
+    splitter.addEventListener('keydown', (e) => {
+      const currentVal = parseInt(splitter.getAttribute('aria-valuenow'), 10);
+      let handled = true;
+
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          updateSplitter(currentVal - STEP, `Keyboard (${e.key}) - Decrement`);
+          break;
+        case 'ArrowRight':
+        case 'ArrowUp':
+          updateSplitter(currentVal + STEP, `Keyboard (${e.key}) - Increment`);
+          break;
+        case 'Home':
+          updateSplitter(MIN_VAL, 'Keyboard (Home) - Min');
+          break;
+        case 'End':
+          updateSplitter(MAX_VAL, 'Keyboard (End) - Max');
+          break;
+        default:
+          handled = false;
+          break;
+      }
+
+      if (handled) {
+        e.preventDefault();
+      }
+    });
+
+    // 2. Touch and mouse dragging support for testing on Android/desktop
+    let isDragging = false;
+
+    splitter.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      splitter.setPointerCapture(e.pointerId);
+      splitter.focus();
+    });
+
+    splitter.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const containerRect = splitter.parentElement.getBoundingClientRect();
+      const offset = e.clientX - containerRect.left;
+      const percentage = (offset / containerRect.width) * 100;
+      updateSplitter(percentage, 'Pointer Drag');
+    });
+
+    const stopDragging = () => { isDragging = false; };
+    splitter.addEventListener('pointerup', stopDragging);
+    splitter.addEventListener('pointercancel', stopDragging);
+  </script>
+</body>
+</html>
