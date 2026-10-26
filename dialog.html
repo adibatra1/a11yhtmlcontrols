@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Dialog focus test</title></head>
+<body>
+<button type="button" id="open-a">Open A</button>
+<dialog id="a" aria-label="Dialog A">
+  <h2>Dialog A</h2>
+  <button type="button" class="close">Close</button>
+  <button type="button" class="other">Other</button>
+  <label aria-hidden="true" for="a-switch">A switch</label>
+  <input id="a-switch" type="checkbox" role="switch" aria-label="A switch">
+</dialog>
+<script>
+  const a = document.getElementById("a");
+  document.getElementById("open-a").addEventListener("click", () => { a.showModal(); a.querySelector(".close").focus(); });
+  a.querySelector(".close").addEventListener("click", () => a.close());
+</script>
+</body>
+</html>
